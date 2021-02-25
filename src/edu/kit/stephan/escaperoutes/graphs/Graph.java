@@ -4,15 +4,26 @@ import edu.kit.stephan.escaperoutes.errors.Errors;
 import edu.kit.stephan.escaperoutes.errors.SemanticsException;
 import edu.kit.stephan.escaperoutes.utilities.Pair;
 
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import java.util.*;
 
 /**
  * The Class describes a Graph of an EscapeNetwork and manages the Graph
- * @see Flow
- * @see Vertex
+ *
  * @author Johannes Stephan
  * @version 1.0
+ * @see Flow
+ * @see Vertex
  */
 public class Graph {
     private static final String EMPTY_FLOW_LIST = "EMPTY";
@@ -33,6 +44,7 @@ public class Graph {
 
     /**
      * Constructor of Graph with pre set Graph Map
+     *
      * @param graph the map which should be preset
      */
     public Graph(Map<Vertex, Set<Pair<Vertex, Integer>>> graph) {
@@ -41,6 +53,7 @@ public class Graph {
 
     /**
      * This Method adds a Vertex to a Graph
+     *
      * @param vertex to be added
      */
     private void addVertex(Vertex vertex) {
@@ -50,9 +63,10 @@ public class Graph {
 
     /**
      * This Method is responsible to add an Edge to the Map
+     *
      * @param fromVertex the origin to be added
-     * @param toVertex the destination to be added
-     * @param capacity the capacity between the two
+     * @param toVertex   the destination to be added
+     * @param capacity   the capacity between the two
      * @throws SemanticsException throws an Exception if the Adding is not possible
      */
     public void addEdge(Vertex fromVertex, Vertex toVertex, int capacity) throws SemanticsException {
@@ -80,6 +94,7 @@ public class Graph {
 
     /**
      * Getter Method
+     *
      * @return number of Vertices of a Graph
      */
     public int getNumberOfVertices() {
@@ -89,8 +104,9 @@ public class Graph {
     /**
      * Gets the flow between two Vertices, if the flow has to be calculated it executes the method
      * calculateMaxFlowBetweenTwoPoints
+     *
      * @param start the start Vertex
-     * @param end the end Vertex
+     * @param end   the end Vertex
      * @return the Flow Value
      * @throws SemanticsException if start or end point are invalid
      */
@@ -109,8 +125,9 @@ public class Graph {
 
     /**
      * Calculates the Max Flow between to given Vertices using the EdmondsKarp Algorithm
+     *
      * @param start the start Vertex
-     * @param end the end Vertex
+     * @param end   the end Vertex
      * @return the calculated Flow Value
      * @throws SemanticsException if start or end point are invalid
      */
@@ -161,10 +178,11 @@ public class Graph {
 
     /**
      * Method to find the Flow Value on parentMap from Start to End
+     *
      * @param parentMap the associated parent map of the BFS
-     * @param flowMap the Map of the currentFlow
-     * @param start the start Point
-     * @param end the end Point
+     * @param flowMap   the Map of the currentFlow
+     * @param start     the start Point
+     * @param end       the end Point
      * @return the flow on the given Path
      */
     private int findFlow(Map<Vertex, Vertex> parentMap, Map<Vertex, Set<Pair<Vertex, Integer>>> flowMap
@@ -173,7 +191,7 @@ public class Graph {
         Vertex child = end;
         Vertex parent = parentMap.get(end);
 
-        while (!child.equals(start))  {
+        while (!child.equals(start)) {
 
             for (Pair<Vertex, Integer> pair : flowMap.get(parent)) {
                 if (pair.getFirstElement().equals(child)) {
@@ -191,10 +209,11 @@ public class Graph {
 
     /**
      * This Method is responsible to update the Flow Graph after a flow was found
-     * @param flowMap the map which is updated
-     * @param start the start vertex
-     * @param end the end vertex
-     * @param flow the flow which was found
+     *
+     * @param flowMap   the map which is updated
+     * @param start     the start vertex
+     * @param end       the end vertex
+     * @param flow      the flow which was found
      * @param parentMap the associated parent map of the BFS
      */
     private void updateFlowGraph(Map<Vertex, Set<Pair<Vertex, Integer>>> flowMap, Vertex start, Vertex end
@@ -223,8 +242,9 @@ public class Graph {
 
     /**
      * An Auxiliary method to determine if start and end Vertices are allowed
+     *
      * @param start the start Vertex
-     * @param end the end Vertex
+     * @param end   the end Vertex
      * @throws SemanticsException throws an Error if Point(s) is(are) not Valid
      */
     private void checkIfStartAndEndPointIsAllowed(Vertex start, Vertex end) throws SemanticsException {
@@ -251,6 +271,7 @@ public class Graph {
 
     /**
      * Method which has to check if the Graph does match the requirements
+     *
      * @throws SemanticsException throws an Exception if Graph does not meet the requirements
      */
     public void checkIfGraphIsValid() throws SemanticsException {
@@ -294,6 +315,7 @@ public class Graph {
 
     /**
      * To String Method
+     *
      * @return the Graph represented as String
      */
     @Override
@@ -311,6 +333,7 @@ public class Graph {
 
     /**
      * Method which is used to create a deepCopy of the GraphMap
+     *
      * @return the deepCopy of the Map
      */
     public Map<Vertex, Set<Pair<Vertex, Integer>>> copyGraph() {
@@ -329,6 +352,7 @@ public class Graph {
 
     /**
      * Getter Method of the calculated Flow List
+     *
      * @return The calculated Paths, if no exist: it returns "EMPTY"
      */
     public String getFlowList() {
