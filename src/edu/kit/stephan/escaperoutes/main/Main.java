@@ -15,7 +15,6 @@ public final class Main {
         throw new IllegalStateException("Utility-class constructor.");
     }
 
-
     /**
      * EntryPoint of the program
      * @param args not used
@@ -23,6 +22,5 @@ public final class Main {
     public static void main(String[] args) {
         Session session = new Session();
         session.interactive();
-
     }
 }

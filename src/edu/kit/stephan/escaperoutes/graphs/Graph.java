@@ -6,8 +6,8 @@ import edu.kit.stephan.escaperoutes.utilities.Pair;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +26,10 @@ import java.util.TreeSet;
  * @see Vertex
  */
 public class Graph {
+    private static final int INDEX_JUMP = 1;
     private static final String EMPTY_FLOW_LIST = "EMPTY";
 
-    private final Map<Vertex, Set<Pair<Vertex, Integer>>> graph;
+    private final Map<Vertex, Set<Pair<Vertex, Integer>>> graphMap;
 
     private int numberOfVertices;
     private List<Flow> flowList;
@@ -37,7 +38,7 @@ public class Graph {
      * Constructor of the Graph
      */
     public Graph() {
-        graph = new TreeMap<>();
+        graphMap = new TreeMap<>();
         numberOfVertices = 0;
         flowList = new LinkedList<>();
     }
@@ -45,10 +46,10 @@ public class Graph {
     /**
      * Constructor of Graph with pre set Graph Map
      *
-     * @param graph the map which should be preset
+     * @param graphMap the map which should be preset
      */
-    public Graph(Map<Vertex, Set<Pair<Vertex, Integer>>> graph) {
-        this.graph = graph;
+    public Graph(Map<Vertex, Set<Pair<Vertex, Integer>>> graphMap) {
+        this.graphMap = graphMap;
     }
 
     /**
@@ -57,7 +58,7 @@ public class Graph {
      * @param vertex to be added
      */
     private void addVertex(Vertex vertex) {
-        graph.put(vertex, new TreeSet<>());
+        graphMap.put(vertex, new TreeSet<>());
         numberOfVertices++;
     }
 
@@ -71,14 +72,20 @@ public class Graph {
      */
     public void addEdge(Vertex fromVertex, Vertex toVertex, int capacity) throws SemanticsException {
 
-        if (graph.containsKey(fromVertex) && graph.containsKey(toVertex)) {
-            for (Pair<Vertex, Integer> pair : graph.get(toVertex)) {
+        if (graphMap.containsKey(fromVertex) && graphMap.containsKey(toVertex)) {
+            /*
+            CHECK OPPOSITE EDGES
+             */
+            for (Pair<Vertex, Integer> pair : graphMap.get(toVertex)) {
                 if (pair.getFirstElement().equals(fromVertex)) {
                     throw new SemanticsException(Errors.CANT_ADD_OPPOSITE_GRAPH_DIRECTION);
                 }
             }
 
-            for (Pair<Vertex, Integer> pair : graph.get(fromVertex)) {
+            /*
+            UPDATE FLOW
+             */
+            for (Pair<Vertex, Integer> pair : graphMap.get(fromVertex)) {
                 if (pair.getFirstElement().equals(toVertex)) {
                     pair.setSecondElement(capacity);
                     flowList = new LinkedList<>();
@@ -86,9 +93,15 @@ public class Graph {
                 }
             }
         }
-        if (!graph.containsKey(fromVertex)) addVertex(fromVertex);
-        if (!graph.containsKey(toVertex)) addVertex(toVertex);
-        graph.get(fromVertex).add(new Pair<>(toVertex, capacity));
+        /*
+        Add Vertices if necessary
+         */
+        if (!graphMap.containsKey(fromVertex)) addVertex(fromVertex);
+        if (!graphMap.containsKey(toVertex)) addVertex(toVertex);
+        /*
+        Create new Edge
+         */
+        graphMap.get(fromVertex).add(new Pair<>(toVertex, capacity));
         flowList = new LinkedList<>();
     }
 
@@ -103,7 +116,7 @@ public class Graph {
 
     /**
      * Gets the flow between two Vertices, if the flow has to be calculated it executes the method
-     * calculateMaxFlowBetweenTwoPoints
+     * calculateMaxFlowBetweenTwoPoints, if not it uses the stored value
      *
      * @param start the start Vertex
      * @param end   the end Vertex
@@ -113,12 +126,12 @@ public class Graph {
     public long getMaxFlowBetweenTwoPoints(Vertex start, Vertex end) throws SemanticsException {
         for (Flow flow : flowList) {
             if (flow.getStartVertex().equals(start) && flow.getEndVertex().equals(end)) {
-                return flow.getFlow();
+                return flow.getFlowValue();
             }
         }
         long estimatedOutput = calculateMaxFlowBetweenTwoPoints(start, end);
-        Flow addFlow = new Flow(estimatedOutput, start, end);
-        flowList.add(addFlow);
+        Flow flow = new Flow(estimatedOutput, start, end);
+        flowList.add(flow);
         return estimatedOutput;
     }
 
@@ -134,46 +147,50 @@ public class Graph {
     private long calculateMaxFlowBetweenTwoPoints(Vertex start, Vertex end) throws SemanticsException {
         checkIfStartAndEndPointIsAllowed(start, end);
         Map<Vertex, Set<Pair<Vertex, Integer>>> flowGraph = copyGraph();
-        Queue<Vertex> vertexQueue = new ArrayDeque<>();
-        Map<Vertex, Vertex> parentMap = new LinkedHashMap<>();
-        Set<Vertex> visitedSet = new LinkedHashSet<>();
-
-
-        boolean terminated = false;
+        Map<Vertex, Vertex> parentMap;
         long output = 0;
 
-
-        while (!terminated) {
-            vertexQueue.add(start);
-            while (true) {
-                Vertex current = vertexQueue.peek();
-
-                if (current == null) terminated = true;
-                if (current == null) break;
-                if (current.equals(end)) break;
-                current = vertexQueue.poll();
-                visitedSet.add(current);
-
-                for (Pair<Vertex, Integer> pair : flowGraph.get(current)) {
-                    if (!visitedSet.contains(pair.getFirstElement())) {
-                        if (pair.getSecondElement() > 0) {
-                            vertexQueue.add(pair.getFirstElement());
-                            visitedSet.add(pair.getFirstElement());
-                            parentMap.put(pair.getFirstElement(), current);
-                        }
-                    }
-                }
-            }
-            if (!terminated) {
-                int flow = findFlow(parentMap, flowGraph, start, end);
-                output += flow;
-                updateFlowGraph(flowGraph, start, end, flow, parentMap);
-                visitedSet.clear();
-                parentMap.clear();
-                vertexQueue.clear();
-            }
+        while (true) {
+            parentMap = breathForSearch(flowGraph, start, end);
+            if (parentMap == null) break;
+            int flow = findFlow(parentMap, flowGraph, start, end);
+            output += flow;
+            updateFlowGraph(flowGraph, start, end, flow, parentMap);
         }
         return output;
+    }
+
+
+    /**
+     * Finds a path between two Points, if there is none it returns null
+     *
+     * @param flowGraph the Graph, in which the algorithm searches the shortest path
+     * @param start     the start point
+     * @param end       the end point
+     * @return a Map which describes the shortest Path between two Points
+     */
+    private Map<Vertex, Vertex> breathForSearch(Map<Vertex, Set<Pair<Vertex, Integer>>> flowGraph
+            , Vertex start, Vertex end) {
+        Queue<Vertex> vertexQueue = new ArrayDeque<>();
+        Map<Vertex, Vertex> parentMap = new HashMap<>();
+        Set<Vertex> visitedSet = new HashSet<>();
+
+        vertexQueue.add(start);
+        visitedSet.add(start);
+        while (true) {
+            Vertex current = vertexQueue.poll();
+            if (current == null) return null;
+            if (current.equals(end)) return parentMap;
+
+            for (Pair<Vertex, Integer> pair : flowGraph.get(current)) {
+                if (!visitedSet.contains(pair.getFirstElement()) && pair.getSecondElement() > 0) {
+                    vertexQueue.add(pair.getFirstElement());
+                    visitedSet.add(pair.getFirstElement());
+                    parentMap.put(pair.getFirstElement(), current);
+                }
+            }
+        }
+
     }
 
     /**
@@ -187,24 +204,23 @@ public class Graph {
      */
     private int findFlow(Map<Vertex, Vertex> parentMap, Map<Vertex, Set<Pair<Vertex, Integer>>> flowMap
             , Vertex start, Vertex end) {
-        int outputCapacity = Integer.MAX_VALUE;
+        int bottleNeckCapacity = Integer.MAX_VALUE;
         Vertex child = end;
         Vertex parent = parentMap.get(end);
 
         while (!child.equals(start)) {
 
             for (Pair<Vertex, Integer> pair : flowMap.get(parent)) {
-                if (pair.getFirstElement().equals(child)) {
-                    if (pair.getSecondElement() < outputCapacity) {
-                        outputCapacity = pair.getSecondElement();
-                    }
+                if (pair.getFirstElement().equals(child) && pair.getSecondElement() < bottleNeckCapacity) {
+                    bottleNeckCapacity = pair.getSecondElement();
+
                 }
             }
             Vertex safeParent = parent;
             parent = parentMap.get(parent);
             child = safeParent;
         }
-        return outputCapacity;
+        return bottleNeckCapacity;
     }
 
     /**
@@ -220,6 +236,7 @@ public class Graph {
             , Integer flow, Map<Vertex, Vertex> parentMap) {
         Vertex current = end;
         while (!current.equals(start)) {
+
             boolean checker = false;
             Vertex parent = parentMap.get(current);
             //Reduce the flow on the way
@@ -249,24 +266,22 @@ public class Graph {
      */
     private void checkIfStartAndEndPointIsAllowed(Vertex start, Vertex end) throws SemanticsException {
         if (start.equals(end)) throw new SemanticsException(Errors.POINTS_CANNOT_BE_EQUAL);
-        if (!graph.containsKey(start)) throw new SemanticsException(Errors.POINT_DOES_NOT_EXIST);
-        if (!graph.containsKey(end)) throw new SemanticsException(Errors.POINT_DOES_NOT_EXIST);
-        if (graph.get(start).isEmpty()) throw new SemanticsException(Errors.POINTS_ARE_UNREACHABLE);
-        if (!graph.get(end).isEmpty()) throw new SemanticsException(Errors.POINTS_DONT_MEET_REQUIREMENTS);
+        if (!graphMap.containsKey(start)) throw new SemanticsException(Errors.POINT_DOES_NOT_EXIST);
+        if (!graphMap.containsKey(end)) throw new SemanticsException(Errors.POINT_DOES_NOT_EXIST);
+        if (graphMap.get(start).isEmpty()) throw new SemanticsException(Errors.POINTS_ARE_UNREACHABLE);
+        if (!graphMap.get(end).isEmpty()) throw new SemanticsException(Errors.POINTS_DONT_MEET_REQUIREMENTS);
+        boolean validEndPoint = false;
 
-        for (Vertex vertex : graph.keySet()) {
-            for (Pair<Vertex, Integer> pair : graph.get(vertex)) {
+        for (Set<Pair<Vertex, Integer>> vertexValues : graphMap.values()) {
+            for (Pair<Vertex, Integer> pair : vertexValues) {
                 if (pair.getFirstElement().equals(start)) {
                     throw new SemanticsException(Errors.POINTS_DONT_MEET_REQUIREMENTS);
                 }
+                if (pair.getFirstElement().equals(end)) validEndPoint = true;
             }
         }
-        for (Vertex vertex : graph.keySet()) {
-            for (Pair<Vertex, Integer> pair : graph.get(vertex)) {
-                if (pair.getFirstElement().equals(end)) return;
-            }
-        }
-        throw new SemanticsException(Errors.POINTS_DONT_MEET_REQUIREMENTS);
+
+        if (!validEndPoint) throw new SemanticsException(Errors.POINTS_DONT_MEET_REQUIREMENTS);
     }
 
     /**
@@ -278,39 +293,48 @@ public class Graph {
         boolean validStartPoint = false;
         boolean validEndPoint = false;
 
-        for (Vertex vertex : graph.keySet()) {
-            //end vertex
-            if (graph.get(vertex).isEmpty()) {
-
-                for (Vertex vertex1 : graph.keySet()) {
-                    for (Pair<Vertex, Integer> pair : graph.get(vertex1)) {
-                        if (pair.getFirstElement().equals(vertex)) {
-                            validEndPoint = true;
-                            break;
-                        }
-                    }
-                }
+        for (Map.Entry<Vertex, Set<Pair<Vertex, Integer>>> vertexSetEntry : graphMap.entrySet()) {
+            if (vertexSetEntry.getValue().isEmpty()) {
+                validEndPoint = checkIfEndPointIsValid(vertexSetEntry.getKey(), validEndPoint);
             }
             //start vertex
-            if (!graph.get(vertex).isEmpty()) {
-                boolean checker = true;
-                for (Vertex vertex1 : graph.keySet()) {
-                    for (Pair<Vertex, Integer> pair : graph.get(vertex1)) {
-                        if (pair.getFirstElement().equals(vertex)) {
-                            checker = false;
-                            break;
-                        }
-                    }
-                }
-                if (checker) {
-                    validStartPoint = true;
-                }
+            if (!vertexSetEntry.getValue().isEmpty() && checkIfStartPointIsValid(vertexSetEntry.getKey())) {
+                validStartPoint = true;
             }
         }
         if (validEndPoint && validStartPoint) {
             return;
         }
         throw new SemanticsException(Errors.GRAPH_HAS_NO_START_OR_END_POINTS);
+    }
+
+    private boolean checkIfStartPointIsValid(Vertex vertex) {
+        boolean checkerValidEndPoint = true;
+        for (Set<Pair<Vertex, Integer>> vertexValues : graphMap.values()) {
+            for (Pair<Vertex, Integer> pair : vertexValues) {
+                if (pair.getFirstElement().equals(vertex)) {
+                    checkerValidEndPoint = false;
+                    break;
+                }
+            }
+        }
+        return checkerValidEndPoint;
+
+    }
+
+    private boolean checkIfEndPointIsValid(Vertex vertex, boolean validEndPoint) {
+        boolean validationOfEndPoint = validEndPoint;
+        if (validationOfEndPoint) return true;
+        for (Map.Entry<Vertex, Set<Pair<Vertex, Integer>>> vertexSetEntry : graphMap.entrySet()) {
+            for (Pair<Vertex, Integer> pair : vertexSetEntry.getValue()) {
+                if (pair.getFirstElement().equals(vertex)) {
+                    validationOfEndPoint = true;
+                    break;
+                }
+            }
+        }
+        return validationOfEndPoint;
+
     }
 
     /**
@@ -321,14 +345,14 @@ public class Graph {
     @Override
     public String toString() {
         StringBuilder output = new StringBuilder();
-        for (Vertex vertex : graph.keySet()) {
-            for (Pair<Vertex, Integer> pair : graph.get(vertex)) {
-                output.append(vertex.toString()).append(pair.getSecondElement())
+        for (Map.Entry<Vertex, Set<Pair<Vertex, Integer>>> vertexSetEntry : graphMap.entrySet()) {
+            for (Pair<Vertex, Integer> pair : vertexSetEntry.getValue()) {
+                output.append(vertexSetEntry.getKey().toString()).append(pair.getSecondElement())
                         .append(pair.getFirstElement().toString());
-                output.append("\n");
+                output.append(System.lineSeparator());
             }
         }
-        return output.deleteCharAt(output.length() - 1).toString();
+        return output.deleteCharAt(output.length() - INDEX_JUMP).toString();
     }
 
     /**
@@ -338,13 +362,13 @@ public class Graph {
      */
     public Map<Vertex, Set<Pair<Vertex, Integer>>> copyGraph() {
         Map<Vertex, Set<Pair<Vertex, Integer>>> output = new TreeMap<>();
-        for (Vertex v : graph.keySet()) {
-            Vertex v1 = new Vertex(v.toString());
-            output.put(v1, new TreeSet<>());
-            for (Pair<Vertex, Integer> pair : graph.get(v)) {
+        for (Map.Entry<Vertex, Set<Pair<Vertex, Integer>>> vertexSetEntry : graphMap.entrySet()) {
+            Vertex vertex1 = new Vertex(vertexSetEntry.getKey().toString());
+            output.put(vertex1, new TreeSet<>());
+            for (Pair<Vertex, Integer> pair : vertexSetEntry.getValue()) {
                 Pair<Vertex, Integer> pair1 = new Pair<>(new Vertex(pair.getFirstElement().toString())
                         , pair.getSecondElement());
-                output.get(v1).add(pair1);
+                output.get(vertex1).add(pair1);
             }
         }
         return output;
@@ -362,8 +386,8 @@ public class Graph {
         Collections.sort(flowList);
         StringBuilder output = new StringBuilder();
         for (Flow flow : flowList) {
-            output.append(flow.toString()).append("\n");
+            output.append(flow.toString()).append(System.lineSeparator());
         }
-        return output.deleteCharAt(output.length() - 1).toString();
+        return output.deleteCharAt(output.length() - INDEX_JUMP).toString();
     }
 }

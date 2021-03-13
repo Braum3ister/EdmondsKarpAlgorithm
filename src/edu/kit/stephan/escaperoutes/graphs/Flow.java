@@ -11,18 +11,18 @@ public class Flow implements Comparable<Flow> {
     private static final String OUTPUT_TO_STRING = "%s %s %s";
     private final Vertex startVertex;
     private final Vertex endVertex;
-    private final long flow;
+    private final long flowValue;
 
     /**
      * Constructor
-     * @param flow the flow Value
+     * @param flowValue the flow Value
      * @param startVertex the start Vertex
      * @param endVertex the end Vertex
      */
-    public Flow(long flow, Vertex startVertex, Vertex endVertex) {
+    public Flow(long flowValue, Vertex startVertex, Vertex endVertex) {
         this.startVertex = startVertex;
         this.endVertex = endVertex;
-        this.flow = flow;
+        this.flowValue = flowValue;
     }
 
     /**
@@ -45,8 +45,8 @@ public class Flow implements Comparable<Flow> {
      * Returns the Flow
      * @return theFlow
      */
-    public long getFlow() {
-        return flow;
+    public long getFlowValue() {
+        return flowValue;
     }
 
     /**
@@ -55,7 +55,7 @@ public class Flow implements Comparable<Flow> {
      */
     @Override
     public String toString() {
-        return String.format(OUTPUT_TO_STRING, flow, startVertex.toString(), endVertex.toString());
+        return String.format(OUTPUT_TO_STRING, flowValue, startVertex.toString(), endVertex.toString());
 
     }
 
@@ -66,7 +66,7 @@ public class Flow implements Comparable<Flow> {
      */
     @Override
     public int compareTo(Flow flow) {
-        if (this.flow != flow.getFlow()) return Long.compare(this.flow, flow.getFlow());
+        if (this.flowValue != flow.getFlowValue()) return Long.compare(this.flowValue, flow.getFlowValue());
         if (!startVertex.toString().equals(flow.startVertex.toString())) {
             return startVertex.toString().compareTo(flow.getStartVertex().toString());
         }
@@ -83,7 +83,7 @@ public class Flow implements Comparable<Flow> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Flow flow1 = (Flow) o;
-        return flow == flow1.flow && startVertex.toString().equals(((Flow) o).getStartVertex().toString())
+        return flowValue == flow1.flowValue && startVertex.toString().equals(((Flow) o).getStartVertex().toString())
                 && endVertex.toString().equals(((Flow) o).getEndVertex().toString());
     }
 
@@ -93,6 +93,6 @@ public class Flow implements Comparable<Flow> {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(startVertex, endVertex, flow);
+        return Objects.hash(startVertex, endVertex, flowValue);
     }
 }

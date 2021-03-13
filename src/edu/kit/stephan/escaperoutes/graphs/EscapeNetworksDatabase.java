@@ -17,6 +17,7 @@ public class EscapeNetworksDatabase {
     private static final String ADD_WAS_VALID = "Added new escape network with identifier %s.";
     private static final String ADD_SECTION_WAS_VALID = "Added new section %s to escape network %s.";
     private static final String FLOW_NETWORK_EMPTY = "EMPTY";
+    private static final int INDEX_JUMP = 1;
     private final Set<EscapeNetwork> escapeNetworkSet;
 
     /**
@@ -84,9 +85,9 @@ public class EscapeNetworksDatabase {
             return FLOW_NETWORK_EMPTY;
         }
         for (EscapeNetwork escapeNetwork : escapeNetworkSet) {
-            output.append(escapeNetwork.toString()).append("\n");
+            output.append(escapeNetwork.toString()).append(System.lineSeparator());
         }
-        return output.deleteCharAt(output.length() - 1).toString();
+        return output.deleteCharAt(output.length() - INDEX_JUMP).toString();
     }
 
     /**

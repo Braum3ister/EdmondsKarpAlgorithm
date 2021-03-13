@@ -15,7 +15,7 @@ public abstract class EscapeNetworkException extends Exception {
      * Constructs a exception with message.
      * @param message the message describing the exception
      */
-    public EscapeNetworkException(String message) {
+    protected EscapeNetworkException(String message) {
         super(message);
     }
 

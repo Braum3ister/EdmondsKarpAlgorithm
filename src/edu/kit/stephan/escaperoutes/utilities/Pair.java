@@ -4,6 +4,8 @@
 
 package edu.kit.stephan.escaperoutes.utilities;
 
+import java.util.Objects;
+
 /**
  * This class describes a pair.
  *
@@ -73,5 +75,19 @@ public class Pair<S, T> implements Comparable<Pair<S, T>> {
     @Override
     public int compareTo(Pair<S, T> o) {
         return this.firstElement.toString().compareTo(o.firstElement.toString());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pair<?, ?> pair = (Pair<?, ?>) o;
+        return Objects.equals(getFirstElement(), pair.getFirstElement())
+                && Objects.equals(getSecondElement(), pair.getSecondElement());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFirstElement(), getSecondElement());
     }
 }

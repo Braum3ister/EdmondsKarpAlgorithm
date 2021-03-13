@@ -12,6 +12,7 @@ import java.util.Objects;
  * @see Graph
  */
 public class EscapeNetwork implements Comparable<EscapeNetwork> {
+    private static final String VALID_LIST_OUTPUT = "%s %s";
     private final Graph graph;
     private final String uniqueIdentifier;
 
@@ -103,7 +104,7 @@ public class EscapeNetwork implements Comparable<EscapeNetwork> {
      */
     @Override
     public String toString() {
-        return uniqueIdentifier + " " + graph.getNumberOfVertices();
+        return String.format(VALID_LIST_OUTPUT, uniqueIdentifier, graph.getNumberOfVertices());
     }
 
     /**
@@ -116,7 +117,7 @@ public class EscapeNetwork implements Comparable<EscapeNetwork> {
         if (this.graph.getNumberOfVertices() == escapeNetwork.getNumberOfVertices()) {
             return this.uniqueIdentifier.compareTo(escapeNetwork.getUniqueIdentifier());
         }
-        return -1 * Integer.compare(this.graph.getNumberOfVertices(), escapeNetwork.getNumberOfVertices());
+        return Integer.compare(escapeNetwork.getNumberOfVertices(), this.graph.getNumberOfVertices());
     }
 
     /**
