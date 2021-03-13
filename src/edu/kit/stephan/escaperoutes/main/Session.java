@@ -6,7 +6,7 @@ import edu.kit.stephan.escaperoutes.commands.CommandParser;
 
 import edu.kit.stephan.escaperoutes.commands.Result;
 import edu.kit.stephan.escaperoutes.errors.SyntaxException;
-import edu.kit.stephan.escaperoutes.graphs.EscapeNetworksDatabase;
+import edu.kit.stephan.escaperoutes.graphs.EscapeNetworkDatabase;
 import edu.kit.stephan.escaperoutes.utilities.Pair;
 import java.util.List;
 
@@ -17,7 +17,7 @@ import java.util.List;
  * @version 1.0
  */
 public class Session {
-    private final EscapeNetworksDatabase escapeNetworksDatabase;
+    private final EscapeNetworkDatabase escapeNetworkDatabase;
     private boolean isCodeRunning;
 
     /**
@@ -25,7 +25,7 @@ public class Session {
      */
     public Session() {
         isCodeRunning = true;
-        escapeNetworksDatabase = new EscapeNetworksDatabase();
+        escapeNetworkDatabase = new EscapeNetworkDatabase();
     }
 
 
@@ -77,7 +77,7 @@ public class Session {
      * @return an Return Object which has the ResultType and its corresponding message
      */
     private Result executeSingleCommand(String command, List<String> parameters) {
-        return Command.getCommand(command).executeCommand(parameters, escapeNetworksDatabase);
+        return Command.getCommand(command).executeCommand(parameters, escapeNetworkDatabase);
     }
 
 }

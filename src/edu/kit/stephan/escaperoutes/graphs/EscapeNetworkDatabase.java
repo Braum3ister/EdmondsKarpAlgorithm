@@ -13,7 +13,7 @@ import java.util.TreeSet;
  * @version 1.0
  * @see EscapeNetwork
  */
-public class EscapeNetworksDatabase {
+public class EscapeNetworkDatabase {
     private static final String ADD_WAS_VALID = "Added new escape network with identifier %s.";
     private static final String ADD_SECTION_WAS_VALID = "Added new section %s to escape network %s.";
     private static final String FLOW_NETWORK_EMPTY = "EMPTY";
@@ -23,7 +23,7 @@ public class EscapeNetworksDatabase {
     /**
      * Constructor
      */
-    public EscapeNetworksDatabase() {
+    public EscapeNetworkDatabase() {
         this.escapeNetworkSet = new TreeSet<>();
     }
 

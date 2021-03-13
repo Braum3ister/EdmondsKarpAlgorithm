@@ -4,7 +4,7 @@ import edu.kit.stephan.escaperoutes.errors.Errors;
 import edu.kit.stephan.escaperoutes.errors.SemanticsException;
 import edu.kit.stephan.escaperoutes.graphs.Edge;
 import edu.kit.stephan.escaperoutes.graphs.EscapeNetwork;
-import edu.kit.stephan.escaperoutes.graphs.EscapeNetworksDatabase;
+import edu.kit.stephan.escaperoutes.graphs.EscapeNetworkDatabase;
 import edu.kit.stephan.escaperoutes.graphs.Vertex;
 
 import java.util.Arrays;
@@ -13,17 +13,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This class describes a Command
+ * @author Johannes Stephan
+ * @version 1.0
+ * @see EscapeNetworkDatabase
+ */
 public enum Command {
     /**
      * Executes the Add-Network Command
      */
     ADD_NETWORK(CommandParser.ADD_NETWORK) {
         @Override
-        public Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase) {
+        public Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase) {
             String resultMessage;
 
             try {
-                resultMessage = escapeNetworksDatabase.addNewEscapeNetwork(Command.createEscapeNetwork(parameters));
+                resultMessage = escapeNetworkDatabase.addNewEscapeNetwork(Command.createEscapeNetwork(parameters));
             } catch (SemanticsException e) {
                 return new Result(Result.ResultType.FAILURE, e.getMessage());
             }
@@ -36,11 +42,11 @@ public enum Command {
      */
     ADD_SECTION(CommandParser.ADD_SECTION) {
         @Override
-        public Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase) {
+        public Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase) {
             String resultMessage;
 
             try {
-                resultMessage = escapeNetworksDatabase.addNewSection(parameters.get(INDEX_OF_NAME),
+                resultMessage = escapeNetworkDatabase.addNewSection(parameters.get(INDEX_OF_NAME),
                         Command.createEdgesOutOfInput(parameters.get(INDEX_OF_PARAMETERS)));
             } catch (SemanticsException e) {
                 return new Result(Result.ResultType.FAILURE, e.getMessage());
@@ -54,8 +60,8 @@ public enum Command {
      */
     LIST_ALL_NETWORKS(CommandParser.LIST_ONE) {
         @Override
-        public Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase) {
-            return new Result(Result.ResultType.SUCCESS, escapeNetworksDatabase.listNetworks());
+        public Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase) {
+            return new Result(Result.ResultType.SUCCESS, escapeNetworkDatabase.listNetworks());
         }
     },
 
@@ -64,11 +70,11 @@ public enum Command {
      */
     LIST_SPECIFIC_NETWORK(CommandParser.LIST_TWO) {
         @Override
-        public Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase) {
+        public Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase) {
             String resultMessage;
 
             try {
-                resultMessage = escapeNetworksDatabase.listFlowOfSpecificNetwork(parameters.get(INDEX_OF_NAME));
+                resultMessage = escapeNetworkDatabase.listFlowOfSpecificNetwork(parameters.get(INDEX_OF_NAME));
             } catch (SemanticsException e) {
                 return new Result(Result.ResultType.FAILURE, e.getMessage());
             }
@@ -81,11 +87,11 @@ public enum Command {
      */
     FLOW(CommandParser.FLOW) {
         @Override
-        public Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase) {
+        public Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase) {
             String resultMessage;
 
             try {
-                resultMessage = escapeNetworksDatabase.calculateOrGetFlow(parameters.get(INDEX_OF_NAME)
+                resultMessage = escapeNetworkDatabase.calculateOrGetFlow(parameters.get(INDEX_OF_NAME)
                         , new Vertex(parameters.get(INDEX_OF_FLOW_START_POINT))
                         , new Vertex(parameters.get(INDEX_OF_FLOW_END_POINT)));
             } catch (SemanticsException e) {
@@ -100,11 +106,11 @@ public enum Command {
      */
     PRINT(CommandParser.PRINT) {
         @Override
-        public Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase) {
+        public Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase) {
             String resultMessage;
 
             try {
-                resultMessage = escapeNetworksDatabase.printEscapeNetwork(parameters.get(INDEX_OF_NAME));
+                resultMessage = escapeNetworkDatabase.printEscapeNetwork(parameters.get(INDEX_OF_NAME));
             } catch (SemanticsException e) {
                 return new Result(Result.ResultType.FAILURE, e.getMessage());
             }
@@ -117,7 +123,7 @@ public enum Command {
      */
     QUIT(CommandParser.QUIT) {
         @Override
-        public Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase) {
+        public Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase) {
             return new Result(Result.ResultType.SUCCESS);
         }
     };
@@ -127,6 +133,11 @@ public enum Command {
     private static final int INDEX_OF_PARAMETERS = 2;
     private static final int INDEX_OF_NAME = 1;
     private final String commandName;
+
+    /**
+     * Constructor of the Command Enum
+     * @param commandName the corresponding String name of a command
+     */
     Command(String commandName) {
         this.commandName = commandName;
     }
@@ -134,10 +145,10 @@ public enum Command {
     /**
      * Executes a specific Command
      * @param parameters Parameters which are needed to execute the Command
-     * @param escapeNetworksDatabase the database on which the Command is executed
+     * @param escapeNetworkDatabase the database on which the Command is executed
      * @return a result, which corresponds to a result type and a message
      */
-    public abstract Result executeCommand(List<String> parameters, EscapeNetworksDatabase escapeNetworksDatabase);
+    public abstract Result executeCommand(List<String> parameters, EscapeNetworkDatabase escapeNetworkDatabase);
 
     /**
      * Getter-Method for the get-Command
