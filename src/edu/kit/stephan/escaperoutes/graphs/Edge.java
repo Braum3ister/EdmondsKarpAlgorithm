@@ -3,7 +3,7 @@ package edu.kit.stephan.escaperoutes.graphs;
 import java.util.Objects;
 
 /**
- * This class describes a Edge in the Graph
+ * This class describes a weighted Edge in the Graph
  * @author Johannes Stephan
  * @version 1.0
  * @see Vertex

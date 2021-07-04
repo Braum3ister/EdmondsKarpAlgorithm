@@ -5,6 +5,7 @@ import edu.kit.stephan.escaperoutes.commands.Command;
 import edu.kit.stephan.escaperoutes.commands.CommandParser;
 
 import edu.kit.stephan.escaperoutes.commands.Result;
+import edu.kit.stephan.escaperoutes.errors.Errors;
 import edu.kit.stephan.escaperoutes.errors.SyntaxException;
 import edu.kit.stephan.escaperoutes.graphs.EscapeNetworkDatabase;
 import edu.kit.stephan.escaperoutes.utilities.Pair;
@@ -18,13 +19,13 @@ import java.util.List;
  */
 public class Session {
     private final EscapeNetworkDatabase escapeNetworkDatabase;
-    private boolean isCodeRunning;
+    private boolean isRunning;
 
     /**
      * Constructs a new instance.
      */
     public Session() {
-        isCodeRunning = true;
+        isRunning = true;
         escapeNetworkDatabase = new EscapeNetworkDatabase();
     }
 
@@ -33,51 +34,65 @@ public class Session {
      * Starts the interactive session by reading the Terminal Input
      */
     public void interactive() {
-        while (isCodeRunning) {
-            String inputUser = Terminal.readLine();
-            Result result = processSingleCommand(inputUser);
-
-            if (result.getType().equals(Result.ResultType.FAILURE)) {
-                Terminal.printError(result.getMessage());
-            } else {
-
-                if (result.getType().equals(Result.ResultType.SUCCESS) && result.getMessage() != null) {
-                    Terminal.printLine(result.getMessage());
-                    continue;
-                }
-                isCodeRunning = false;
-            }
+        isRunning = true;
+        while (isRunning) {
+            processSingleCommand();
         }
     }
 
     /**
      * processes a single input
-     *
-     * @param inputUser the String of the user input;
-     * @return an Return Object which has the ResultType and its corresponding message
      */
-    private Result processSingleCommand(String inputUser) {
+    private void processSingleCommand() {
+        String inputUser = Terminal.readLine();
         CommandParser commandParser = new CommandParser();
         Pair<String, List<String>> parsedArguments;
         try {
             parsedArguments = commandParser.parseCommand(inputUser);
         } catch (SyntaxException e) {
-            return new Result(Result.ResultType.FAILURE, e.getMessage());
+            printError(e.getMessage());
+            return;
         }
+
         final String command = parsedArguments.getFirstElement();
         final List<String> parameters = parsedArguments.getSecondElement();
-        return executeSingleCommand(command, parameters);
+        executeSingleCommand(command, parameters);
     }
 
     /**
      * Method which execute the inputted Command with the Parameters
-     *
+     * (Inspired by the solution of Lukas Alber (Santorini))
      * @param command    the parsed Command String
      * @param parameters the parameters to the associated Command
-     * @return an Return Object which has the ResultType and its corresponding message
      */
-    private Result executeSingleCommand(String command, List<String> parameters) {
-        return Command.getCommand(command).executeCommand(parameters, escapeNetworkDatabase);
+    private void executeSingleCommand(String command, List<String> parameters) {
+        Result result = Command.getCommand(command).executeCommand(parameters, escapeNetworkDatabase);
+        switch (result.getType()) {
+            case SUCCESS:
+                if (result.getMessage() != null) {
+                    Terminal.printLine(result.getMessage());
+                } else {
+                    isRunning = false;
+                }
+                break;
+            case FAILURE:
+                if (result.getMessage() != null) {
+                    printError(result.getMessage());
+                } else {
+                    printError(Errors.COMMAND_ENDED_ERROR);
+                }
+                break;
+
+            default:
+                throw new IllegalStateException(Errors.NOT_IMPLEMENTED);
+        }
     }
 
+    /**
+     * This Method is used to simplify the Error Output
+     * @param errorMessage the Error Message to be printed
+     */
+    private void printError(String errorMessage) {
+        Terminal.printError(errorMessage);
+    }
 }

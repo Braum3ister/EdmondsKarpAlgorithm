@@ -1,6 +1,7 @@
 package edu.kit.stephan.escaperoutes.main;
 
 
+
 /**
  * This class provides the Main access point
  * @author Johannes Stephan

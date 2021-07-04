@@ -9,44 +9,40 @@ public final class Errors {
     /**
      * Gets Thrown when the Regex is invalid
      */
-    public static final String SYNTAX_ERROR = "The Regex of the command is invalid";
+    public static final String SYNTAX_ERROR = "The Regex of the command is invalid.";
     /**
      * Gets Thrown when the Command does not exist
      */
-    public static final String COMMAND_DOES_NOT_EXIST = "Command doesnt exist";
+    public static final String COMMAND_DOES_NOT_EXIST = "Command doesn't exist.";
     /**
      * Gets Thrown when the User tries to add Graph Segment which is invalid
      */
-    public static final String CANT_ADD_OPPOSITE_GRAPH_DIRECTION = "Can't add graph Segment";
+    public static final String CANT_ADD_OPPOSITE_GRAPH_DIRECTION = "Can't add graph segment, which is invalid.";
     /**
      * Gets Thrown when the User tries to print a Graph which is not existent
      */
-    public static final String GRAPH_NOT_EXIST = "Graph to print does not exist";
+    public static final String GRAPH_NOT_EXIST = "Graph to print doesn't exist";
     /**
-     * Gets Thrown when the Graph already exist
+     * Gets Thrown when the Graph already exists
      */
-    public static final String GRAPH_ALREADY_EXIST = "Try a new name";
+    public static final String GRAPH_ALREADY_EXIST = "Try a new name, the graph already exists.";
     /**
      * Gets Thrown when the Section which should be added is Invalid
      */
-    public static final String GRAPH_SECTION_ADD_IS_INVALID = "Cant add section";
+    public static final String GRAPH_SECTION_ADD_IS_INVALID
+            = "Cant add section, because it would create an invalid graph";
     /**
      * Gets Thrown when the Capacity is not an Integer
      */
-    public static final String CAPACITY_IS_NOT_A_INT = "capacity is not an Integer";
-    /**
-     * Gets Thrown when the Command is not implemented
-     */
-    public static final String COMMAND_NOT_IMPLEMENTED = "Command was not implemented";
+    public static final String CAPACITY_IS_NOT_A_INT = "The given capacity is not an integer";
     /**
      *  Gets thrown when the Graph is not existent
      */
-    public static final String GRAPH_DOES_NOT_EXIST = "Graph does not exist";
-
+    public static final String GRAPH_DOES_NOT_EXIST = "The Graph does not exist";
     /**
      * Gets thrown when Start or End Points are not existent
      */
-    public static final String POINT_DOES_NOT_EXIST = "Start/End point does not exist";
+    public static final String POINT_DOES_NOT_EXIST = "Start/End point doesn't exist";
 
     /**
      * Gets thrown when Start and Endpoints are equal
@@ -71,12 +67,21 @@ public final class Errors {
     /**
      * Gets thrown when the Edge already exist.
      */
-    public static final String CANT_ADD_EDGE_WHICH_EXIST = "This edge exists already";
+    public static final String CANT_ADD_EDGE_WHICH_EXIST = "This edge exist already";
 
     /**
      * Gets thrown when the Graph has loops
      */
     public static final String LOOPS_NOT_ALLOWED = "Loops are not allowed";
+
+    /**
+     * Error-Message if something was not implemented, but should
+     */
+    public static final String NOT_IMPLEMENTED = "Should have been implemented";
+    /**
+     * Error-Message if a command did not succeed but no message was supplied
+     */
+    public static final String COMMAND_ENDED_ERROR = "Command did not succeed.";
 
     /**
      * Utility-class constructor

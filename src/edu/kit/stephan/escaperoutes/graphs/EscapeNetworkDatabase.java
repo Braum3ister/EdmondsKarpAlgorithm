@@ -18,10 +18,11 @@ public class EscapeNetworkDatabase {
     private static final String ADD_SECTION_WAS_VALID = "Added new section %s to escape network %s.";
     private static final String FLOW_NETWORK_EMPTY = "EMPTY";
     private static final int INDEX_JUMP = 1;
+    private static final boolean INITIALIZATION = false;
     private final Set<EscapeNetwork> escapeNetworkSet;
 
     /**
-     * Constructor
+     * Constructor of the Database, which stores the EscapeNetwork
      */
     public EscapeNetworkDatabase() {
         this.escapeNetworkSet = new TreeSet<>();
@@ -34,12 +35,7 @@ public class EscapeNetworkDatabase {
      * @throws SemanticsException if the Network which should be printed does not exist
      */
     public String printEscapeNetwork(String uniqueIdentifier) throws SemanticsException {
-        for (EscapeNetwork escapeNetwork : escapeNetworkSet) {
-            if (escapeNetwork.getUniqueIdentifier().equals(uniqueIdentifier)) {
-                return escapeNetwork.getGraphAsString();
-            }
-        }
-        throw new SemanticsException(Errors.GRAPH_NOT_EXIST);
+        return searchEscapeNetwork(uniqueIdentifier).getGraphAsString();
     }
 
     /**
@@ -49,11 +45,10 @@ public class EscapeNetworkDatabase {
      * @throws SemanticsException if the UniqueIdentifier already exist
      */
     public String addNewEscapeNetwork(EscapeNetwork escapeNetwork) throws SemanticsException {
-        for (EscapeNetwork escapeNet : escapeNetworkSet) {
-            if (escapeNet.getUniqueIdentifier().equals(escapeNetwork.getUniqueIdentifier())) {
-                throw new SemanticsException(Errors.GRAPH_ALREADY_EXIST);
-            }
-        }
+        boolean networkExist = escapeNetworkSet.stream()
+                .anyMatch(escapeNetworkInSet -> escapeNetworkInSet.getUniqueIdentifier()
+                        .equals(escapeNetwork.getUniqueIdentifier()));
+        if (networkExist) throw new SemanticsException(Errors.GRAPH_ALREADY_EXIST);
         escapeNetworkSet.add(escapeNetwork);
         return String.format(ADD_WAS_VALID, escapeNetwork.getUniqueIdentifier());
     }
@@ -66,13 +61,8 @@ public class EscapeNetworkDatabase {
      * @throws SemanticsException if the add was not successful
      */
     public String addNewSection(String uniqueIdentifier, Edge edge) throws SemanticsException {
-        for (EscapeNetwork escapeNetwork : escapeNetworkSet) {
-            if (escapeNetwork.getUniqueIdentifier().equals(uniqueIdentifier)) {
-                escapeNetwork.addEdge(edge, false);
-                return String.format(ADD_SECTION_WAS_VALID, edge.toString(), uniqueIdentifier);
-            }
-        }
-        throw new SemanticsException(Errors.GRAPH_SECTION_ADD_IS_INVALID);
+        searchEscapeNetwork(uniqueIdentifier).addEdge(edge, INITIALIZATION);
+        return String.format(ADD_SECTION_WAS_VALID, edge.toString(), uniqueIdentifier);
     }
 
     /**
@@ -97,12 +87,7 @@ public class EscapeNetworkDatabase {
      * @throws SemanticsException if the Graph does not exist
      */
     public String listFlowOfSpecificNetwork(String uniqueIdentifier) throws SemanticsException {
-        for (EscapeNetwork escapeNetwork : escapeNetworkSet) {
-            if (escapeNetwork.getUniqueIdentifier().equals(uniqueIdentifier)) {
-                return escapeNetwork.getFlowList();
-            }
-        }
-        throw new SemanticsException(Errors.GRAPH_DOES_NOT_EXIST);
+        return searchEscapeNetwork(uniqueIdentifier).getFlowList();
     }
 
     /**
@@ -114,11 +99,19 @@ public class EscapeNetworkDatabase {
      * @throws SemanticsException if an error occurred during the Calculation
      */
     public String calculateOrGetFlow(String uniqueIdentifier, Vertex start, Vertex end) throws SemanticsException {
-        for (EscapeNetwork escapeNetwork : escapeNetworkSet) {
-            if (escapeNetwork.getUniqueIdentifier().equals(uniqueIdentifier)) {
-                return String.valueOf(escapeNetwork.calculateFlow(start, end));
-            }
-        }
-        throw new SemanticsException(Errors.GRAPH_DOES_NOT_EXIST);
+        return String.valueOf(searchEscapeNetwork(uniqueIdentifier).calculateFlow(start, end));
+    }
+
+    /**
+     * Searches an EscapeNetwork in the stored Set
+     * @param uniqueIdentifier the identifier of a specific EscapeNetwork
+     * @return the EscapeNetwork which corresponds to the identifier
+     * @throws SemanticsException if the EscapeNetwork which corresponds to the identifier does not exist.
+     */
+    private EscapeNetwork searchEscapeNetwork(String uniqueIdentifier) throws SemanticsException {
+        return escapeNetworkSet.stream()
+                .filter(escapeNetwork -> escapeNetwork.getUniqueIdentifier().equals(uniqueIdentifier))
+                .findFirst()
+                .orElseThrow(() -> new SemanticsException(Errors.GRAPH_DOES_NOT_EXIST));
     }
 }

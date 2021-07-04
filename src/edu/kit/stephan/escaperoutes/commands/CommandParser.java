@@ -15,7 +15,7 @@ import java.util.List;
  * @author Johannes Stephan
  * @version 1.0
  */
-public class CommandParser {
+public class CommandParser implements CommandParserInterface {
     /**
      * String representation of add Command
      */
@@ -119,21 +119,17 @@ public class CommandParser {
             case ADD:
                 if (inputUser.matches(REGEX_ADD_NETWORK)) return ADD_NETWORK;
                 if (inputUser.matches(REGEX_ADD_SECTION)) return ADD_SECTION;
-
                 throw new SyntaxException(Errors.SYNTAX_ERROR);
-
             case PRINT:
                 if (inputUser.matches(REGEX_PRINT)) {
                     return PRINT;
                 }
                 throw new SyntaxException(Errors.SYNTAX_ERROR);
-
             case FLOW:
                 if (inputUser.matches(REGEX_FLOW)) {
                     return FLOW;
                 }
                 throw new SyntaxException(Errors.SYNTAX_ERROR);
-
             case LIST:
                 if (inputUser.matches(REGEX_LIST_NETWORKS)) {
                     return LIST_ONE;
@@ -148,7 +144,6 @@ public class CommandParser {
                     return QUIT;
                 }
                 throw new SyntaxException(Errors.SYNTAX_ERROR);
-
             default:
                 throw new SyntaxException(Errors.COMMAND_DOES_NOT_EXIST);
         }

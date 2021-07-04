@@ -18,4 +18,5 @@ public class SemanticsException extends EscapeNetworkException {
     public SemanticsException(String message) {
         super(message);
     }
+
 }

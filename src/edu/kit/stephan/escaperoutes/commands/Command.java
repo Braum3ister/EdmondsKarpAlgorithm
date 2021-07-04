@@ -47,7 +47,7 @@ public enum Command {
 
             try {
                 resultMessage = escapeNetworkDatabase.addNewSection(parameters.get(INDEX_OF_NAME),
-                        Command.createEdgesOutOfInput(parameters.get(INDEX_OF_PARAMETERS)));
+                        Command.createEdgeOutOfInput(parameters.get(INDEX_OF_PARAMETERS)));
             } catch (SemanticsException e) {
                 return new Result(Result.ResultType.FAILURE, e.getMessage());
             }
@@ -132,6 +132,9 @@ public enum Command {
     private static final int INDEX_OF_FLOW_END_POINT = 3;
     private static final int INDEX_OF_PARAMETERS = 2;
     private static final int INDEX_OF_NAME = 1;
+    private static final int START_OF_NAME = 0;
+    private static final String SPLIT_SECTION = ";";
+    private static final String REGEX_NUMBER = "\\d+";
     private final String commandName;
 
     /**
@@ -176,12 +179,12 @@ public enum Command {
      * @return the parsed Edge
      * @throws SemanticsException throws an Error if Edge is not valid
      */
-    private static Edge createEdgesOutOfInput(String parameterEdges) throws SemanticsException {
-        Pattern pattern = Pattern.compile("\\d+");
+    private static Edge createEdgeOutOfInput(String parameterEdges) throws SemanticsException {
+        Pattern pattern = Pattern.compile(REGEX_NUMBER);
         Matcher matcher = pattern.matcher(parameterEdges);
         //noinspection ResultOfMethodCallIgnored
         matcher.find();
-        String nameOfFirstVertex = parameterEdges.substring(0, matcher.start());
+        String nameOfFirstVertex = parameterEdges.substring(START_OF_NAME, matcher.start());
         String nameOfSecondVertex = parameterEdges.substring(matcher.end());
         if (nameOfFirstVertex.equals(nameOfSecondVertex)) throw new SemanticsException(Errors.LOOPS_NOT_ALLOWED);
         int capacity;
@@ -200,11 +203,11 @@ public enum Command {
      * @throws SemanticsException if the semantics are wrong, which are needed to construct the EscapeNetwork
      */
     private static EscapeNetwork createEscapeNetwork(List<String> parameters) throws SemanticsException {
-        String[] edgesString = parameters.get(INDEX_OF_PARAMETERS).split(";");
+        String[] edgesString = parameters.get(INDEX_OF_PARAMETERS).split(SPLIT_SECTION);
         List<Edge> edges = new LinkedList<>();
 
         for (String s : edgesString) {
-            Edge edge = createEdgesOutOfInput(s);
+            Edge edge = createEdgeOutOfInput(s);
             if (edges.contains(edge)) {
                 throw new SemanticsException(Errors.CANT_ADD_EDGE_WHICH_EXIST);
             }

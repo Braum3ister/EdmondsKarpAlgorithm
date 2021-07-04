@@ -13,9 +13,9 @@ import java.util.Objects;
  */
 public class EscapeNetwork implements Comparable<EscapeNetwork> {
     private static final String VALID_LIST_OUTPUT = "%s %s";
+    private static final boolean INITIALIZATION = true;
     private final Graph graph;
     private final String uniqueIdentifier;
-
 
     /**
      * Constructor
@@ -24,7 +24,7 @@ public class EscapeNetwork implements Comparable<EscapeNetwork> {
      * @throws SemanticsException throws an Error if the Creation of the Network has failed
      */
     public EscapeNetwork(String uniqueIdentifier, List<Edge> edges) throws SemanticsException {
-        this.graph = new Graph();
+        this.graph = new EdmondsKarpExtension();
         this.uniqueIdentifier = uniqueIdentifier;
         this.createGraph(edges);
     }
@@ -37,7 +37,7 @@ public class EscapeNetwork implements Comparable<EscapeNetwork> {
      */
     private void createGraph(List<Edge> edges) throws SemanticsException {
         for (Edge edge : edges) {
-            addEdge(edge, true);
+            addEdge(edge, INITIALIZATION);
         }
         graph.checkIfGraphIsValid();
     }
@@ -63,7 +63,8 @@ public class EscapeNetwork implements Comparable<EscapeNetwork> {
      * @throws SemanticsException if the Points are not valid to find a flow
      */
     public long calculateFlow(Vertex start, Vertex end) throws SemanticsException {
-        return graph.getMaxFlowBetweenTwoPoints(start, end);
+        EdmondsKarpExtension edmondsKarpExtension = (EdmondsKarpExtension) graph;
+        return edmondsKarpExtension.getMaxFlowBetweenTwoPoints(start, end);
     }
 
     /**
@@ -71,7 +72,8 @@ public class EscapeNetwork implements Comparable<EscapeNetwork> {
      * @return the Flow List
      */
     public String getFlowList() {
-        return graph.getFlowList();
+        EdmondsKarpExtension edmondsKarpExtension = (EdmondsKarpExtension) graph;
+        return edmondsKarpExtension.getFlowList();
     }
 
     /**
